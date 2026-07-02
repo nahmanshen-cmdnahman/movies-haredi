@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מערכת סרטים מאובטחת</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; margin-top: 50px; }
+        input[type="text"], input[type="password"] { padding: 10px; width: 80%; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 16px; }
+        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button.admin-btn { background-color: #28a745; }
+        .hidden { display: none; }
+        .movie-item { padding: 15px; border-bottom: 1px solid #eee; text-align: right; font-size: 18px; }
+        .movie-item a { color: #007bff; text-decoration: none; font-weight: bold; float: left; }
+        ul { text-align: right; background: #eee; padding: 15px 30px; border-radius: 4px; }
+        .logout { color: #dc3545; text-decoration: none; display: inline-block; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen" class="card">
+        <h2>כניסה למערכת הסרטים</h2>
+        <input type="password" id="password-input" placeholder="הכנס סיסמה קבועה או סיסמת צופה"><br>
+        <button onclick="handleLogin()">התחבר</button>
+    </div>
+
+    <div id="admin-screen" class="card hidden">
+        <h2>שלום מנהל המערכת</h2>
+        <h3>הוספת סיסמת צופה חדשה:</h3>
+        <input type="text" id="new-password-input" placeholder="הקלד סיסמה חדשה למשתמש"><br>
+        <button class="admin-btn" onclick="addViewerPassword()">הוסף סיסמה למערכת</button>
+        
+        <h3>סיסמאות צופים פעילות:</h3>
+        <ul id="passwords-list"></ul>
+        <a href="#" class="logout" onclick="logout()">התנתק מהמערכת</a>
+    </div>
+
+    <div id="viewer-screen" class="card hidden">
+        <h2>סרטים זמינים לצפייה</h2>
+        <div id="movies-list"></div>
+        <a href="#" class="logout" onclick="logout()">התנתק מהמערכת</a>
+    </div>
+
+    <script>
+        // 🛑 החלף כאן לכתובת השרת האמיתית שלך ב-Render!
+        const SERVER_URL = "https://movies-haredi-backend.onrender.com";
+        
+        let currentPassword = "";
+
+        async function handleLogin() {
+            const password = document.getElementById('password-input').value;
+            if (!password) return alert('נא להזין סיסמה');
+
+            try {
+                const response = await fetch(`${SERVER_URL}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    return alert(errData.error || 'שגיאה בהתחברות');
+                }
+
+                const data = await response.json();
+                currentPassword = password; // שמירת הסיסמה לשימוש בהמשך
+
+                document.getElementById('login-screen').classList.add('hidden');
+
+                if (data.role === 'admin') {
+                    showAdminScreen(data.viewerPasswords);
+                } else if (data.role === 'viewer') {
+                    showViewerScreen(data.movies);
+                }
+            } catch (error) {
+                alert('שגיאה בתקשורת עם השרת. ודא שהשרת ברנדר פועל.');
+            }
+        }
+
+        function showAdminScreen(passwords) {
+            document.getElementById('admin-screen').classList.remove('hidden');
+            const list = document.getElementById('passwords-list');
+            list.innerHTML = passwords.map(p => `<li>${p}</li>`).join('') || '<li>אין עדיין סיסמאות במערכת</li>';
+        }
+
+        async function addViewerPassword() {
+            const newViewerPassword = document.getElementById('new-password-input').value;
+            if (!newViewerPassword) return alert('נא להזין סיסמה חדשה');
+
+            try {
+                const response = await fetch(`${SERVER_URL}/api/add-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminPassword: currentPassword, newViewerPassword })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showAdminScreen(data.viewerPasswords);
+                    document.getElementById('new-password-input').value = "";
+                    alert('הסיסמה נוספה בהצלחה!');
+                }
+            } catch (error) {
+                alert('שגיאה בהוספת הסיסמה');
+            }
+        }
+
+        function showViewerScreen(movies) {
+            document.getElementById('viewer-screen').classList.remove('hidden');
+            const container = document.getElementById('movies-list');
+            container.innerHTML = movies.map(m => `
+                <div class="movie-item">
+                    <span>${m.title}</span>
+                    <a href="${m.url}" target="_blank" rel="noopener noreferrer">צפייה 🎬</a>
+                </div>
+            `).join('') || '<p>אין סרטים זמינים כרגע</p>';
+        }
+
+        function logout() {
+            currentPassword = "";
+            document.getElementById('password-input').value = "";
+            document.getElementById('admin-screen').classList.add('hidden');
+            document.getElementById('viewer-screen').classList.add('hidden');
+            document.getElementById('login-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
