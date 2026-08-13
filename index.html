@@ -585,13 +585,24 @@
             localStorage.setItem('deviceId', deviceId);
         }
 
-        // פונקציית התנתקות - מרעננת את האתר
+        // פונקציית התנתקות - מוחקת את הסיסמה השמורה ומרעננת את האתר
         function logout() {
+            localStorage.removeItem('savedPassword');
             window.location.reload();
         }
 
+        // בדיקה אוטומטית בטעינת הדף האם יש סיסמה שמורה למכשיר זה
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedPassword = localStorage.getItem('savedPassword');
+            if (savedPassword) {
+                // הזנה אוטומטית של הסיסמה והתחברות שקטה
+                document.getElementById('passwordInput').value = savedPassword;
+                login(true); // true מעיד על התחברות אוטומטית שקטה
+            }
+        });
+
         // פונקציית התחברות
-        async function login() {
+        async function login(isAuto = false) {
             const passwordInput = document.getElementById('passwordInput');
             const password = passwordInput.value;
             const errorDiv = document.getElementById('errorMessage');
@@ -602,25 +613,30 @@
             errorDiv.innerText = '';
 
             if (!password) {
-                errorDiv.innerText = 'אנא הזן סיסמה';
+                if (!isAuto) errorDiv.innerText = 'אנא הזן סיסמה';
                 return;
             }
 
-            // 1. שינוי הכפתור למצב המתנה לשרת[cite: 1]
-            loginBtn.disabled = true;
-            loginBtn.style.opacity = '0.75';
-            loginBtn.style.cursor = 'wait';
-            loginBtnText.innerText = 'בודק סיסמה. אנא המתן...';
-            loginBtnIcon.innerText = 'sync';
-            loginBtnIcon.style.animation = 'spin 1.5s linear infinite';
+            // 1. שינוי הכפתור למצב המתנה לשרת (רק אם זו לא התחברות אוטומטית שקטה)[cite: 1]
+            if (!isAuto) {
+                loginBtn.disabled = true;
+                loginBtn.style.opacity = '0.75';
+                loginBtn.style.cursor = 'wait';
+                loginBtnText.innerText = 'בודק סיסמה. אנא המתן...';
+                loginBtnIcon.innerText = 'sync';
+                loginBtnIcon.style.animation = 'spin 1.5s linear infinite';
+            }
 
             try {
                 // 2. שליחת הבקשה לשרת באמצעות פונקציית העזר (כולל הגנת 50 שניות)[cite: 1]
                 const data = await callServer('/api/login', { password, deviceId });
                 if (!data) {
-                    resetLoginButton();
+                    if (!isAuto) resetLoginButton();
                     return;
                 }
+
+                // שמירת הסיסמה ב-localStorage כך שהמכשיר יישאר מחובר עד ללחיצה על התנתקות
+                localStorage.setItem('savedPassword', password);
 
                 // התחברות מוצלחת
                 document.getElementById('loginForm').style.display = 'none';
@@ -643,8 +659,13 @@
                 }
 
             } catch (err) {
-                errorDiv.innerText = err.message || 'שגיאת תקשורת עם השרת';
-                resetLoginButton();
+                // אם הסיסמה השמורה לא תקפה יותר, ננקה אותה
+                if (isAuto) {
+                    localStorage.removeItem('savedPassword');
+                } else {
+                    errorDiv.innerText = err.message || 'שגיאת תקשורת עם השרת';
+                    resetLoginButton();
+                }
             }
         }
 
