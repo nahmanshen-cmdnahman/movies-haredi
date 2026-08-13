@@ -497,7 +497,7 @@
     <script>
         const SERVER_URL = 'https://movies-haredi-database.onrender.com';
 
-        // פונקציית עזר גלובלית לביצוע בקשות לשרת עם Timeout של 50 שניות וטיפול בשגיאות
+        // פונקציית עזר גלובלית לביצוע בקשות לשרת כולל אימות תוכן JSON והגנת Timeout של 50 שניות
         async function callServer(endpoint, data) {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 50000); // 50 שניות המתנה לשרת
@@ -511,6 +511,13 @@
                 });
 
                 clearTimeout(timeoutId);
+
+                // בדיקה שהשרת אכן החזיר JSON ולא דף שגיאה HTML (מונע את שגיאת ה-Unexpected token)
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    throw new Error('השרת מתעורר כעת משנתה ב-Render. אנא המתן מספר שניות ונסה שוב.');
+                }
+
                 const result = await response.json();
 
                 if (!response.ok) {
@@ -522,7 +529,7 @@
             } catch (error) {
                 clearTimeout(timeoutId);
                 if (error.name === 'AbortError') {
-                    throw new Error('השרת לא הגיב במשך 50 שניות (ייתכן שהוא מתעורר כעת משנתה ב-Render, נסה שוב).');
+                    throw new Error('השרת לא הגיב במשך 50 שניות (ייתכן שהוא מתעורר כעת). נסה שוב.');
                 }
                 throw error;
             }
@@ -544,7 +551,7 @@
             return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : url;
         }
 
-        // פתיחת חלון הצפייה בסרט באמצעות הנגן המוטמע של יוטיוב[cite: 1]
+        // פתיחת חלון הצפייה בסרט באמצעות הנגן המוטמע של יוטיוב
         function openWin(url, title = 'צפייה בסרט') {
             const overlay = document.getElementById('videoModalOverlay');
             const videoContainer = document.getElementById('videoContainer');
@@ -578,7 +585,7 @@
             }, 300);
         }
 
-        // מזהה ייחודי למכשיר בדפדפן[cite: 1]
+        // יצירה או שליפה של מזהה מכשיר ייחודי (deviceId)
         let deviceId = localStorage.getItem('deviceId');
         if (!deviceId) {
             deviceId = 'dev_' + Math.random().toString(36).substr(2, 9);
@@ -591,17 +598,16 @@
             window.location.reload();
         }
 
-        // בדיקה אוטומטית בטעינת הדף האם יש סיסמה שמורה למכשיר זה
+        // בדיקה אוטומטית בטעינת הדף: אם יש סיסמה שמורה למכשיר הזה, התחבר באופן אוטומטי מבלי להציג את טופס ההתחברות
         window.addEventListener('DOMContentLoaded', () => {
             const savedPassword = localStorage.getItem('savedPassword');
             if (savedPassword) {
-                // הזנה אוטומטית של הסיסמה והתחברות שקטה
                 document.getElementById('passwordInput').value = savedPassword;
-                login(true); // true מעיד על התחברות אוטומטית שקטה
+                login(true); // true מסמן התחברות שקטה ברקע
             }
         });
 
-        // פונקציית התחברות
+        // פונקציית התחברות (ידנית או אוטומטית)
         async function login(isAuto = false) {
             const passwordInput = document.getElementById('passwordInput');
             const password = passwordInput.value;
@@ -617,7 +623,7 @@
                 return;
             }
 
-            // 1. שינוי הכפתור למצב המתנה לשרת (רק אם זו לא התחברות אוטומטית שקטה)[cite: 1]
+            // במצב ידני, הצג אנימציית טעינה על כפתור ההתחברות
             if (!isAuto) {
                 loginBtn.disabled = true;
                 loginBtn.style.opacity = '0.75';
@@ -628,7 +634,7 @@
             }
 
             try {
-                // 2. שליחת הבקשה לשרת באמצעות פונקציית העזר (כולל הגנת 50 שניות)[cite: 1]
+                // שליחת הבקשה לשרת עם הסיסמה ומזהה המכשיר
                 const data = await callServer('/api/login', { password, deviceId });
                 if (!data) {
                     if (!isAuto) resetLoginButton();
@@ -638,16 +644,14 @@
                 // שמירת הסיסמה ב-localStorage כך שהמכשיר יישאר מחובר עד ללחיצה על התנתקות
                 localStorage.setItem('savedPassword', password);
 
-                // התחברות מוצלחת
+                // הצלחה - הסתרת טופס ההתחברות והצגת פאנל התוכן וכפתור ההתנתקות
                 document.getElementById('loginForm').style.display = 'none';
-                
-                // הצגת כפתור ההתנתקות
                 document.getElementById('logoutBtn').style.display = 'inline-flex';
 
                 const contentArea = document.getElementById('contentArea');
                 contentArea.style.display = 'block';
 
-                // עדכון סיווג המשתמש ב-Header והצגת הפאנל המתאים
+                // התאמת התצוגה לפי תפקיד המשתמש (מנהל או צופה מורשה)
                 if (data.role === 'admin') {
                     document.getElementById('headerStatusText').innerText = 'מנהל מערכת';
                     document.getElementById('statusIcon').innerText = 'admin_panel_settings';
@@ -659,7 +663,7 @@
                 }
 
             } catch (err) {
-                // אם הסיסמה השמורה לא תקפה יותר, ננקה אותה
+                // אם ההתחברות האוטומטית נכשלה (למשל פגה הסיסמה), ננקה את הנתונים ונציג את טופס ההתחברות הרגיל
                 if (isAuto) {
                     localStorage.removeItem('savedPassword');
                 } else {
@@ -669,7 +673,7 @@
             }
         }
 
-        // החזרת הכפתור למצבו הרגיל במקרה של שגיאה
+        // החזרת כפתור ההתחברות למצבו המקורי במקרה של שגיאה
         function resetLoginButton() {
             const loginBtn = document.getElementById('loginBtn');
             const loginBtnText = document.getElementById('loginBtnText');
@@ -683,7 +687,7 @@
             loginBtnIcon.style.animation = 'none';
         }
 
-        // טעינת פאנל ניהול מנהל[cite: 1]
+        // טעינת פאנל ניהול למנהל המערכת
         async function loadAdminPanel(password) {
             const contentArea = document.getElementById('contentArea');
             contentArea.innerHTML = '<div class="app-card"><h2>פאנל ניהול</h2><p>טוען נתונים...</p></div>';
@@ -720,7 +724,7 @@
 
         let allMovies = [];
 
-        // טעינת פאנל הסרטים[cite: 1]
+        // טעינת רשימת הסרטים לצופה המורשה
         async function loadMoviesPanel(password) {
             const contentArea = document.getElementById('contentArea');
             contentArea.innerHTML = '<div class="app-card"><h2>סרטים זמינים לצפייה</h2><p>טוען סרטים...</p></div>';
@@ -742,7 +746,7 @@
             }
         }
 
-        // הצגת רשת הסרטים עם סרגל חיפוש קולי[cite: 1]
+        // הצגת רשת הסרטים עם סרגל חיפוש וחיפוש קולי
         function renderMoviesView(movies) {
             const contentArea = document.getElementById('contentArea');
             let html = `
@@ -775,7 +779,7 @@
             contentArea.innerHTML = html;
         }
 
-        // סינון סרטים בזמן אמת[cite: 1]
+        // פונקציית סינון סרטים בזמן אמת לפי חיפוש
         function filterMovies() {
             const query = document.getElementById('movieSearchInput').value.toLowerCase();
             const filtered = allMovies.filter(m => m.title.toLowerCase().includes(query));
@@ -799,7 +803,7 @@
             `}).join('');
         }
 
-        // חיפוש קולי בלחיצה (Web Speech API)[cite: 1]
+        // חיפוש קולי באמצעות Web Speech API
         function startVoiceSearch() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
