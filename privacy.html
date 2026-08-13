@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מדיניות פרטיות - רשת הסרטונים החרדית</title>
+    <link rel="icon" href="https://movies-haredi.vercel.app/logo.png" type="image/png">
+    <!-- Google Material Symbols & Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-main: #f8f9fa;
+            --surface: #ffffff;
+            --primary: #1a73e8;
+            --text-dark: #202124;
+            --text-muted: #5f6368;
+            --border: #dadce0;
+            --sidebar-width: 260px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Assistant', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            display: flex;
+            min-height: 100vh;
+            direction: rtl;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--surface);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 15px;
+            position: fixed;
+            top: 0; bottom: 0; right: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .brand img { width: 40px; height: 40px; border-radius: 8px; }
+        .brand h1 { font-size: 1.1rem; color: var(--text-dark); font-weight: 700; }
+
+        .nav-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .nav-item a:hover, .nav-item a.active {
+            background-color: #e8f0fe;
+            color: var(--primary);
+        }
+
+        /* --- Main Content Area --- */
+        .main-wrapper {
+            margin-right: var(--sidebar-width);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            height: 64px;
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            position: sticky;
+            top: 0; z-index: 90;
+        }
+
+        .content {
+            padding: 32px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+
+        .app-card {
+            background: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 24px;
+        }
+
+        .app-card-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-dark);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+
+        .privacy-section {
+            margin-bottom: 24px;
+        }
+
+        .privacy-section h3 {
+            font-size: 1.15rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .privacy-section p, .privacy-section ul {
+            font-size: 0.98rem;
+            color: #3c4043;
+            line-height: 1.6;
+        }
+
+        .privacy-section ul {
+            padding-right: 20px;
+            margin-top: 8px;
+        }
+
+        .privacy-section li {
+            margin-bottom: 6px;
+        }
+
+        /* --- Footer --- */
+        footer {
+            background-color: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .footer-links { display: flex; gap: 16px; list-style: none; }
+        .footer-links a { color: var(--text-muted); text-decoration: none; }
+        .footer-links a:hover { text-decoration: underline; }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-wrapper { margin-right: 0; }
+            .content { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="brand">
+            <img src="https://movies-haredi.vercel.app/logo.png" alt="לוגו">
+            <h1>סרטים חרדיים</h1>
+        </div>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="https://movies-haredi.vercel.app">
+                    <span class="material-symbols-outlined">home</span>
+                    דף הבית
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="https://movies-haredi.vercel.app/signup">
+                    <span class="material-symbols-outlined">card_membership</span>
+                    הרשמה ומנוי
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="https://movies-haredi.vercel.app/privacy" class="active">
+                    <span class="material-symbols-outlined">shield</span>
+                    מדיניות פרטיות
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <div class="main-wrapper">
+        <header>
+            <div style="font-size: 0.9rem; color: var(--text-muted);">
+                מדיניות פרטיות ותנאי שימוש
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="app-card">
+                <div class="app-card-title">
+                    <span class="material-symbols-outlined">verified_user</span>
+                    מדיניות פרטיות ותנאי שימוש
+                </div>
+
+                <div class="privacy-section">
+                    <h3>
+                        <span class="material-symbols-outlined">info</span>
+                        1. כללי
+                    </h3>
+                    <p>ברוכים הבאים לרשת הסרטונים החרדית. האתר מופעל על מנת לספק תכנים מותאמים ואיכותיים למשתמשי המערכת. השימוש באתר ובשירותיו כפוף למדיניות פרטיות זו ולתנאי השימוש המפורטים להלן.</p>
+                </div>
+
+                <div class="privacy-section">
+                    <h3>
+                        <span class="material-symbols-outlined">devices</span>
+                        2. איסוף נתונים וזיהוי מכשירים
+                    </h3>
+                    <p>כדי להבטיח אבטחת מידע ולמנוע שימוש בלתי מורשה בחשבונות המנויים, המערכת משתמשת במזהה מכשיר ייחודי (Device Identifier) המאוחסן בדפדפן LocalStorage. נתון זה משמש אך ורק לצורך:</p>
+                    <ul>
+                        <li>אימות זהות המשתמש המחובר למערכת.</li>
+                        <li>ניהול ובקרת כמות המכשירים המחוברים במקביל לכל קוד גישה.</li>
+                    </ul>
+                </div>
+
+                <div class="privacy-section">
+                    <h3>
+                        <span class="material-symbols-outlined">payments</span>
+                        3. סליקה ותשלומים
+                    </h3>
+                    <p>כל התשלומים והמנויים מבוצעים באופן מאובטח באמצעות פלטפורמת PayPal. האתר אינו אוסף, מעבד או שומר נתוני אשראי או פרטי תשלום רגישים בשרתיו. העברות התשלום מתנהלות ישירות מול ספק הסליקה.</p>
+                </div>
+
+                <div class="privacy-section">
+                    <h3>
+                        <span class="material-symbols-outlined">key</span>
+                        4. שימוש בקוד גישה אישי
+                    </h3>
+                    <p>קוד הגישה שניתן לכל מנוי הינו אישי ומיועד לשימוש המשפחה הגרעינית בלבד. חל איסור מוחלט להעביר, למכור או לשתף את הקוד עם גורמים שלישיים. המערכת מנטרת חיבורים חריגים ושומרת לעצמה את הזכות לחסום קוד שנעשה בו שימוש חורג.</p>
+                </div>
+
+                <div class="privacy-section">
+                    <h3>
+                        <span class="material-symbols-outlined">support_agent</span>
+                        5. צור קשר ותמיכה
+                    </h3>
+                    <p>בכל שאלה, פנייה או בקשה בנוגע למדיניות הפרטיות או לתפעול המערכת, ניתן לפנות אלינו דרך עמוד הציור קשר והתמיכה הטכנית.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <div>© כל הזכויות שמורות לרשת הסרטונים החרדית</div>
+            <ul class="footer-links">
+                <li><a href="https://movies-haredi.vercel.app/privacy">תקנון ומדיניות פרטיות</a></li>
+                <li><a href="https://movies-haredi-contact.vercel.app" target="_blank">צור קשר / תמיכה</a></li>
+            </ul>
+        </footer>
+    </div>
+
+</body>
+</html>
